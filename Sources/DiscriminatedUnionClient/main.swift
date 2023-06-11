@@ -1,8 +1,14 @@
 import DiscriminatedUnion
 
-let a = 17
-let b = 25
 
-let (result, code) = #stringify(a + b)
+@DiscriminatedUnion
+enum Pet {
+  case dog
+  case cat(curious: Bool)
+  case parrot
+  case snake
+}
 
-print("The value \(result) was produced by the code \"\(code)\"")
+
+//Swift.print("usiyan::: Pet.dog.discriminant: \(String(describing: Pet.dog.discriminant))")
+//print("The value \(result) was produced by the code \"\(code)\"")

@@ -4,31 +4,81 @@ import XCTest
 import DiscriminatedUnionMacros
 
 let testMacros: [String: Macro.Type] = [
-    "stringify": StringifyMacro.self,
+    "discriminatedUnion": DiscriminatedUnionMacro.self,
 ]
 
 final class DiscriminatedUnionTests: XCTestCase {
     func testMacro() {
         assertMacroExpansion(
             """
-            #stringify(a + b)
+            @DiscriminatedUnion
+            enum Pet {
+              case dog
+              case cat(curious: Bool)
+              case parrot
+              case snake
+            }
             """,
             expandedSource: """
-            (a + b, "a + b")
-            """,
-            macros: testMacros
-        )
-    }
+            enum Pet {
+              case dog
+              case cat(curious: Bool)
+              case parrot
+              case snake
 
-    func testMacroWithStringLiteral() {
-        assertMacroExpansion(
-            #"""
-            #stringify("Hello, \(name)")
-            """#,
-            expandedSource: #"""
-            ("Hello, \(name)", #""Hello, \(name)""#)
-            """#,
+              enum Discriminant {
+                case dog
+                case cat
+                case parrot
+                case snake
+              }
+            }
+            """,
             macros: testMacros
         )
     }
 }
+
+
+//func testMacro() {
+//    assertMacroExpansion(
+//        """
+//        @DiscriminatedUnion
+//        enum Pet {
+//          case dog
+//          case cat(curious: Bool)
+//          case parrot
+//          case snake
+//        }
+//        """,
+//        expandedSource: """
+//        enum Pet {
+//          case dog
+//          case cat(curious: Bool)
+//          case parrot
+//          case snake
+//
+//          enum Discriminant {
+//            case dog
+//            case cat
+//            case parrot
+//            case snake
+//          }
+//
+//          var discriminant: Discriminant {
+//            switch self {
+//            case dog:
+//                return .dog
+//            case cat:
+//                return .cat
+//            case parrot:
+//                return .parrot
+//            case snake:
+//                return .snake
+//            }
+//          }
+//        }
+//        """,
+//        macros: testMacros
+//    )
+//}
