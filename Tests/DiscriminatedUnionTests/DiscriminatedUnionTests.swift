@@ -20,6 +20,7 @@ final class DiscriminatedUnionTests: XCTestCase {
             }
             """,
             expandedSource: """
+            @DiscriminatedUnion
             enum Pet {
               case dog
               case cat(curious: Bool)

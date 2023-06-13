@@ -3,12 +3,12 @@ import DiscriminatedUnion
 
 @DiscriminatedUnion
 enum Pet {
-  case dog
-  case cat(curious: Bool)
-  case parrot
-  case snake
+    case dog
+    case cat(curious: Bool)
+    case parrot(loud: Bool)
+    case snake
+    case turtle(snapper: Bool)
+
 }
 
-
-//Swift.print("usiyan::: Pet.dog.discriminant: \(String(describing: Pet.dog.discriminant))")
-//print("The value \(result) was produced by the code \"\(code)\"")
+Swift.print("usiyan::: Pet.Discriminant.dog == Pet.dog.discriminant: \(String(describing: Pet.Discriminant.dog == Pet.dog.discriminant))")
