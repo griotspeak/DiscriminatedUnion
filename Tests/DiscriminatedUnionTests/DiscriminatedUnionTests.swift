@@ -27,7 +27,7 @@ final class DiscriminatedUnionTests: XCTestCase {
               case parrot
               case snake
 
-              enum Discriminant {
+              enum Discriminant: Hashable {
                 case dog
                 case cat
                 case parrot
