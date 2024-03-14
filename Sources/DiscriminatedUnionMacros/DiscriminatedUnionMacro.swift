@@ -7,10 +7,10 @@ import Foundation
 
 public struct DiscriminatedUnionMacro {
 
-    // cribbed from MetaEnum
+    // cribbed from MetaEnum example that seems to have disappeared.
     let parentTypeName: TokenSyntax
     let childCases: [EnumCaseElementSyntax]
-    let access: ModifierListSyntax.Element?
+    let access: DeclModifierListSyntax.Element?
     let parentParamName: TokenSyntax
 
     init(
@@ -24,12 +24,12 @@ public struct DiscriminatedUnionMacro {
         ])
       }
 
-      parentTypeName = enumDecl.identifier.with(\.trailingTrivia, [])
+        parentTypeName = enumDecl.name.with(\.trailingTrivia, [])
 
-      access = enumDecl.modifiers?.first(where: \.isNeededAccessLevelModifier)
+        access = enumDecl.modifiers.first(where: \.isNeededAccessLevelModifier)
 
       childCases = enumDecl.caseElements.map { parentCase in
-        parentCase.with(\.associatedValue, nil)
+          parentCase.with(\.parameterClause, nil)
       }
 
       parentParamName = context.makeUniqueName("parent")
@@ -50,7 +50,7 @@ extension DiscriminatedUnionMacro: MemberMacro {
             declaration: declaration,
             context: context)
 
-        var discriminantDecl = try instance.declareDiscriminant()
+        var discriminantDecl = try instance.declareDiscriminantType()
         discriminantDecl.memberBlock.rightBrace.leadingTrivia = .newline
 
         let unvalidatedPropertyDecl = try instance.declareDiscriminantProperty()
@@ -66,14 +66,14 @@ extension DiscriminatedUnionMacro: MemberMacro {
         case attemptPrint(String)
     }
 
-    func declareDiscriminant() throws -> EnumDeclSyntax {
+    func declareDiscriminantType() throws -> EnumDeclSyntax {
         try EnumDeclSyntax("enum Discriminant: Hashable") {
             for singleCase in childCases {
                 EnumCaseDeclSyntax(
                     leadingTrivia: .carriageReturn) {
                         EnumCaseElementSyntax(
                             leadingTrivia: .space,
-                            identifier: singleCase.identifier)
+                            name: singleCase.name)
                     }
             }
         }
@@ -82,8 +82,8 @@ extension DiscriminatedUnionMacro: MemberMacro {
     func declareDiscriminantProperty() throws -> DeclSyntax {
         let casesWrittenOut = childCases.map {
                 """
-                case .\($0.identifier):
-                    return .\($0.identifier)
+                case .\($0.name):
+                    return .\($0.name)
                 """
         }.joined(separator: "\n")
 

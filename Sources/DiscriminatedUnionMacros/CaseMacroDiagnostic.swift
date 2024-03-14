@@ -16,29 +16,30 @@ enum CaseMacroDiagnostic {
   case notAnEnum(DeclGroupSyntax)
 }
 
-extension CaseMacroDiagnostic: DiagnosticMessage {
-  var message: String {
-    switch self {
-    case .notAnEnum(let decl):
-      return "'@MetaEnum' can only be attached to an enum, not \(decl.descriptiveDeclKind(withArticle: true))"
-    }
-  }
+    extension CaseMacroDiagnostic: DiagnosticMessage {
+      var message: String {
+        switch self {
+        case .notAnEnum(let decl):
+            // TODO:
+          return "'@DiscriminatedUnion' can only be attached to an enum, not \(decl.descriptiveDeclKind(withArticle: true))"
+        }
+      }
 
-  var diagnosticID: MessageID {
-    switch self {
-    case .notAnEnum:
-      return MessageID(domain: "MetaEnumDiagnostic", id: "notAnEnum")
-    }
-  }
+      var diagnosticID: MessageID {
+        switch self {
+        case .notAnEnum:
+          return MessageID(domain: "CaseMacroDiagnostic", id: "notAnEnum")
+        }
+      }
 
-  var severity: DiagnosticSeverity {
-    switch self {
-    case .notAnEnum:
-      return .error
-    }
-  }
+      var severity: DiagnosticSeverity {
+        switch self {
+        case .notAnEnum:
+          return .error
+        }
+      }
 
-  func diagnose(at node: Syntax) -> Diagnostic {
-    Diagnostic(node: node, message: self)
-  }
-}
+      func diagnose(at node: Syntax) -> Diagnostic {
+        Diagnostic(node: node, message: self)
+      }
+    }

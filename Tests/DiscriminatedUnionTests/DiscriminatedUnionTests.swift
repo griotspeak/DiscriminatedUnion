@@ -8,7 +8,8 @@ let testMacros: [String: Macro.Type] = [
 ]
 
 final class DiscriminatedUnionTests: XCTestCase {
-    func testMacro() {
+    func testMacro() throws {
+#if canImport(DiscriminatedUnionMacros)
         assertMacroExpansion(
             """
             @DiscriminatedUnion
@@ -37,49 +38,8 @@ final class DiscriminatedUnionTests: XCTestCase {
             """,
             macros: testMacros
         )
+#else
+        throw XCTSkip("macros are only supported when running tests for the host platform")
+#endif
     }
 }
-
-
-//func testMacro() {
-//    assertMacroExpansion(
-//        """
-//        @DiscriminatedUnion
-//        enum Pet {
-//          case dog
-//          case cat(curious: Bool)
-//          case parrot
-//          case snake
-//        }
-//        """,
-//        expandedSource: """
-//        enum Pet {
-//          case dog
-//          case cat(curious: Bool)
-//          case parrot
-//          case snake
-//
-//          enum Discriminant {
-//            case dog
-//            case cat
-//            case parrot
-//            case snake
-//          }
-//
-//          var discriminant: Discriminant {
-//            switch self {
-//            case dog:
-//                return .dog
-//            case cat:
-//                return .cat
-//            case parrot:
-//                return .parrot
-//            case snake:
-//                return .snake
-//            }
-//          }
-//        }
-//        """,
-//        macros: testMacros
-//    )
-//}
