@@ -18,21 +18,19 @@ public struct DiscriminatedUnionMacro {
         declaration: some DeclGroupSyntax,
         context: some MacroExpansionContext
     ) throws {
-      guard let enumDecl = declaration.as(EnumDeclSyntax.self) else {
-        throw DiagnosticsError(diagnostics: [
-          CaseMacroDiagnostic.notAnEnum(declaration).diagnose(at: Syntax(node))
-        ])
-      }
+        guard let enumDecl = declaration.as(EnumDeclSyntax.self) else {
+            throw DiagnosticsError(diagnostics: [
+                CaseMacroDiagnostic.notAnEnum(declaration).diagnose(at: Syntax(node))
+            ])
+        }
 
         parentTypeName = enumDecl.name.with(\.trailingTrivia, [])
 
         access = enumDecl.modifiers.first(where: \.isNeededAccessLevelModifier)
 
-      childCases = enumDecl.caseElements.map { parentCase in
-          parentCase.with(\.parameterClause, nil)
-      }
+        childCases = enumDecl.caseElements
 
-      parentParamName = context.makeUniqueName("parent")
+        parentParamName = context.makeUniqueName("parent")
     }
 }
 
@@ -67,7 +65,7 @@ extension DiscriminatedUnionMacro: MemberMacro {
     }
 
     func declareDiscriminantType() throws -> EnumDeclSyntax {
-        try EnumDeclSyntax("enum Discriminant: Hashable") {
+        try EnumDeclSyntax("enum Discriminant: Hashable, CaseIterable") {
             for singleCase in childCases {
                 EnumCaseDeclSyntax(
                     leadingTrivia: .carriageReturn) {
@@ -76,7 +74,32 @@ extension DiscriminatedUnionMacro: MemberMacro {
                             name: singleCase.name)
                     }
             }
+
+            "\n"
+            "\n"
+
+            try declareAssociatedTypeFunction()
         }
+    }
+
+    func declareAssociatedTypeFunction() throws -> DeclSyntax {
+        let theCases = childCases.map { singleCase in
+            let myTrivia = singleCase.parameterClause?.parameters.description
+            return "case .\(singleCase.name): \(singleCase.parameterClause != nil) // \(String(describing: myTrivia))"
+        }
+        let theSwitch = """
+            switch self {
+            \(theCases.joined(separator: "\n"))
+            }
+        """
+        return DeclSyntax(stringLiteral:"""
+
+            
+            var hasAssociatedType: Bool {
+                \(theSwitch)
+            }
+            """
+        )
     }
 
     func declareDiscriminantProperty() throws -> DeclSyntax {
