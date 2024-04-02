@@ -128,6 +128,28 @@ extension DiscriminatedUnionMacro: MemberMacro {
 
 }
 
+extension DiscriminatedUnionMacro: ExtensionMacro {
+  public static func expansion(
+    of attribute: AttributeSyntax,
+    attachedTo decl: some DeclGroupSyntax,
+    providingExtensionsOf type: some TypeSyntaxProtocol,
+    conformingTo protocols: [TypeSyntax],
+    in context: some MacroExpansionContext
+  ) throws -> [ExtensionDeclSyntax] {
+    // If there is an explicit conformance to DiscriminatedUnion already, don't add one.
+    if protocols.isEmpty {
+      return []
+    }
+
+    let ext: DeclSyntax =
+      """
+      extension \(type.trimmed): DiscriminatedUnion {}
+      """
+
+    return [ext.cast(ExtensionDeclSyntax.self)]
+  }
+}
+
 
 @main
 struct DiscriminatedUnionPlugin: CompilerPlugin {
