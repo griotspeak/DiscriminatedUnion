@@ -65,7 +65,7 @@ extension DiscriminatedUnionMacro: MemberMacro {
     }
 
     func declareDiscriminantType() throws -> EnumDeclSyntax {
-        try EnumDeclSyntax("enum Discriminant: Hashable, CaseIterable") {
+        try EnumDeclSyntax("enum Discriminant: DiscriminantType") {
             for singleCase in childCases {
                 EnumCaseDeclSyntax(
                     leadingTrivia: .carriageReturn) {
