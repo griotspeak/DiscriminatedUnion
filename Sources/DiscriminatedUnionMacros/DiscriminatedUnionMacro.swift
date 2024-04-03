@@ -65,7 +65,7 @@ extension DiscriminatedUnionMacro: MemberMacro {
     }
 
     func declareDiscriminantType() throws -> EnumDeclSyntax {
-        try EnumDeclSyntax("enum Discriminant: DiscriminantType") {
+        try EnumDeclSyntax("public enum Discriminant: DiscriminantType") {
             for singleCase in childCases {
                 EnumCaseDeclSyntax(
                     leadingTrivia: .carriageReturn) {
@@ -95,7 +95,7 @@ extension DiscriminatedUnionMacro: MemberMacro {
         return DeclSyntax(stringLiteral:"""
 
             
-            var hasAssociatedType: Bool {
+            public var hasAssociatedType: Bool {
                 \(theSwitch)
             }
             """
@@ -119,7 +119,7 @@ extension DiscriminatedUnionMacro: MemberMacro {
 
         return
             """
-            var discriminant: Discriminant {
+            public var discriminant: Discriminant {
                 \(switchWrittenOut)
             }
             """
