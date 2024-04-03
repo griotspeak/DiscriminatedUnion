@@ -16,7 +16,7 @@ public protocol DiscriminatedUnion {
 public protocol DiscriminantType: Hashable, Equatable, CaseIterable {}
 
 extension DiscriminatedUnion {
-    static func randomDiscriminant<G: RandomNumberGenerator>(
+    public static func randomDiscriminant<G: RandomNumberGenerator>(
         using generator: inout G
     ) -> Self.Discriminant {
         Discriminant.random(using: &generator)
@@ -24,11 +24,11 @@ extension DiscriminatedUnion {
 }
 
 extension DiscriminantType {
-    static func random<G: RandomNumberGenerator>(using generator: inout G) -> Self {
+    public static func random<G: RandomNumberGenerator>(using generator: inout G) -> Self {
         Self.allCases.randomElement(using: &generator)!
     }
 
-    static func random() -> Self {
+    public static func random() -> Self {
         var g = SystemRandomNumberGenerator()
         return Self.random(using: &g)
     }
