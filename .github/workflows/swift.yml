@@ -31,4 +31,4 @@ jobs:
       - name: Get Scheme Names
         run: xcodebuild -list
       - name: Test platform ${{ matrix.destination }}
-        run: set -o pipefail && xcodebuild -scheme DiscriminatedUnion -destination "${{ matrix.destination }}" -disableAutomaticPackageResolution test | xcbeautify
+        run: set -o pipefail && xcodebuild -scheme DiscriminatedUnionClient -destination "${{ matrix.destination }}" -disableAutomaticPackageResolution test | xcbeautify
