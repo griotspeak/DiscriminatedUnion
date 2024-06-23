@@ -21,7 +21,7 @@ enum CaseMacroDiagnostic {
         switch self {
         case .notAnEnum(let decl):
             // TODO:
-          return "'@DiscriminatedUnion' can only be attached to an enum, not \(decl.descriptiveDeclKind(withArticle: true))"
+          return "'@discriminatedUnion' can only be attached to an enum, not \(decl.descriptiveDeclKind(withArticle: true))"
         }
       }
 

@@ -4,7 +4,7 @@
     names: named(Discriminant), named(discriminant)
 )
 @attached(extension, conformances: DiscriminatedUnion)
-public macro DiscriminatedUnion() = #externalMacro(
+public macro discriminatedUnion() = #externalMacro(
     module: "DiscriminatedUnionMacros",
     type: "DiscriminatedUnionMacro")
 

@@ -1,7 +1,7 @@
 import DiscriminatedUnion
 
 
-@DiscriminatedUnion
+@discriminatedUnion
 enum Pet {
     case dog
     case cat(curious: Bool)
