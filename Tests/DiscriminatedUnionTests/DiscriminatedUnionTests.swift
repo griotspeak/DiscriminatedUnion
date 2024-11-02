@@ -19,53 +19,53 @@ final class DiscriminatedUnionTests: XCTestCase {
             """
             @discriminatedUnion
             enum Pet {
-              case dog
-              case cat(curious: Bool)
-              case parrot
-              case snake
+                case dog
+                case cat(curious: Bool)
+                case parrot
+                case snake
             }
             """,
 
             expandedSource: 
 """
 enum Pet {
-  case dog
-  case cat(curious: Bool)
-  case parrot
-  case snake
+    case dog
+    case cat(curious: Bool)
+    case parrot
+    case snake
 
     public enum Discriminant: DiscriminantType {
-      case dog
-      case cat
-      case parrot
-      case snake
+        case dog
+        case cat
+        case parrot
+        case snake
 
-    public var hasAssociatedType: Bool {
-      switch self {
-      case .dog:
-          false // nil
-      case .cat:
-          true // Optional("curious: Bool")
-      case .parrot:
-          false // nil
-      case .snake:
-          false // nil
-      }
+        public var hasAssociatedType: Bool {
+            switch self {
+            case .dog:
+                false // nil
+            case .cat:
+                true // Optional("curious: Bool")
+            case .parrot:
+                false // nil
+            case .snake:
+                false // nil
+            }
+        }
     }
-  }
 
-  public var discriminant: Discriminant {
-    switch self {
-    case .dog:
-      return .dog
-    case .cat:
-      return .cat
-    case .parrot:
-      return .parrot
-    case .snake:
-      return .snake
+    public var discriminant: Discriminant {
+        switch self {
+        case .dog:
+            return .dog
+        case .cat:
+            return .cat
+        case .parrot:
+            return .parrot
+        case .snake:
+            return .snake
+        }
     }
-  }
 }
 
 """,

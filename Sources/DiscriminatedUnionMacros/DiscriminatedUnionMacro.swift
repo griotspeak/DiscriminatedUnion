@@ -68,7 +68,7 @@ extension DiscriminatedUnionMacro: MemberMacro {
         try EnumDeclSyntax("public enum Discriminant: DiscriminantType") {
             for singleCase in childCases {
                 EnumCaseDeclSyntax(
-                    leadingTrivia: .carriageReturn) {
+                    leadingTrivia: .newline) {
                         EnumCaseElementSyntax(
                             leadingTrivia: .space,
                             name: singleCase.name)
@@ -88,9 +88,9 @@ extension DiscriminatedUnionMacro: MemberMacro {
             return "case .\(singleCase.name): \(singleCase.parameterClause != nil) // \(String(describing: myTrivia))"
         }
         let theSwitch = """
-            switch self {
-            \(theCases.joined(separator: "\n"))
-            }
+        switch self {
+        \(theCases.joined(separator: "\n"))
+        }
         """
         return DeclSyntax(stringLiteral:"""
 
