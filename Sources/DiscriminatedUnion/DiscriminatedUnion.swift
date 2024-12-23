@@ -1,7 +1,7 @@
 
 @attached(
     member,
-    names: named(Discriminant), named(discriminant)
+    names: named(Discriminant), named(discriminant), prefixed(associatedValueFor)
 )
 @attached(extension, conformances: DiscriminatedUnion)
 public macro discriminatedUnion() = #externalMacro(

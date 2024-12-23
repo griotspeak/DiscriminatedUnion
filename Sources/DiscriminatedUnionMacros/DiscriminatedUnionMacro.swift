@@ -38,6 +38,7 @@ extension DiscriminatedUnionMacro: MemberMacro {
     public static func expansion<Declaration, Context>(
         of node: SwiftSyntax.AttributeSyntax,
         providingMembersOf declaration: Declaration,
+        conformingTo protocols: [TypeSyntax],
         in context: Context
     ) throws -> [SwiftSyntax.DeclSyntax]
     where
@@ -65,7 +66,8 @@ extension DiscriminatedUnionMacro: MemberMacro {
     }
 
     func declareDiscriminantType() throws -> EnumDeclSyntax {
-        try EnumDeclSyntax("public enum Discriminant: DiscriminantType") {
+        return try EnumDeclSyntax("public enum Discriminant: DiscriminantType") {
+
             for singleCase in childCases {
                 EnumCaseDeclSyntax(
                     leadingTrivia: .newline) {
@@ -75,7 +77,6 @@ extension DiscriminatedUnionMacro: MemberMacro {
                     }
             }
 
-            "\n"
             "\n"
 
             try declareHasAssociatedTypeFunction()
@@ -93,7 +94,7 @@ extension DiscriminatedUnionMacro: MemberMacro {
         }
         """
         return DeclSyntax(stringLiteral:"""
-
+            
             
             public var hasAssociatedType: Bool {
                 \(theSwitch)
@@ -101,6 +102,55 @@ extension DiscriminatedUnionMacro: MemberMacro {
             """
         )
     }
+
+    func doSomethingSpecial() throws -> [DeclSyntax] {
+        let theCases = childCases.compactMap { singleCase in
+            if let parameterClause = singleCase.parameterClause {
+                let bindings = parameterClause.parameters.enumerated().map({ (index, parameter) in
+                    "let \(parameter.firstName ?? "index\(raw: index)")"
+                })
+
+                let rawOut = parameterClause.parameters.enumerated().map({ (index, parameter) in
+                    "\(parameter.firstName ?? "index\(raw: index)")"
+                })
+
+                let output: String
+                if parameterClause.parameters.count == 1 {
+                    output = rawOut.first!
+                } else {
+                    output = "(\(rawOut.joined(separator: ", ")))"
+                }
+
+                return (
+                    String(describing: singleCase.name),
+                    parameterClause.parameters.count == 1 ? String(describing: parameterClause.parameters.first!.type) : "(\(parameterClause.parameters.description))",
+                    bindings.joined(separator: ", "),
+                    output
+                )
+            } else {
+                return nil
+            }
+        }
+
+        let theSomethings: [DeclSyntax] = theCases.map { caseName, tupleType, pBindings, returnValue in
+            let titleCasedName = "\(caseName.first!.uppercased())\(caseName.dropFirst())"
+            return """
+
+                public var associatedValueFor\(raw: titleCasedName): \(raw: tupleType) {
+                    if case .\(raw: caseName)(raw: \(raw: pBindings)) = self {
+                        return \(raw: returnValue)
+                    } else {
+                        return nil
+                    }
+                }
+
+            """
+        }
+
+        Swift.print("usiyan::: theSomethings: \(String(describing: theSomethings))")
+        return theSomethings
+    }
+
 
     func declareDiscriminantProperty() throws -> DeclSyntax {
         let casesWrittenOut = childCases.map {

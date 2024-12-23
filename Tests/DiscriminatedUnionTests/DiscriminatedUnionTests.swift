@@ -23,6 +23,7 @@ final class DiscriminatedUnionTests: XCTestCase {
                 case cat(curious: Bool)
                 case parrot
                 case snake
+                case bird(name: String, Int)
             }
             """,
 
@@ -33,12 +34,14 @@ enum Pet {
     case cat(curious: Bool)
     case parrot
     case snake
+    case bird(name: String, Int)
 
     public enum Discriminant: DiscriminantType {
         case dog
         case cat
         case parrot
         case snake
+        case bird
 
         public var hasAssociatedType: Bool {
             return switch self {
@@ -50,6 +53,8 @@ enum Pet {
                 false // nil
             case .snake:
                 false // nil
+            case .bird:
+                true // Optional("name: String, Int")
             }
         }
     }
@@ -64,6 +69,8 @@ enum Pet {
             return .parrot
         case .snake:
             return .snake
+        case .bird:
+            return .bird
         }
     }
 }
