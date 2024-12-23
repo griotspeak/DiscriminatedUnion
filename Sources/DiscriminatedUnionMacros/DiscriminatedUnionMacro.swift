@@ -78,17 +78,17 @@ extension DiscriminatedUnionMacro: MemberMacro {
             "\n"
             "\n"
 
-            try declareAssociatedTypeFunction()
+            try declareHasAssociatedTypeFunction()
         }
     }
 
-    func declareAssociatedTypeFunction() throws -> DeclSyntax {
+    func declareHasAssociatedTypeFunction() throws -> DeclSyntax {
         let theCases = childCases.map { singleCase in
             let myTrivia = singleCase.parameterClause?.parameters.description
             return "case .\(singleCase.name): \(singleCase.parameterClause != nil) // \(String(describing: myTrivia))"
         }
         let theSwitch = """
-        switch self {
+        return switch self {
         \(theCases.joined(separator: "\n"))
         }
         """
@@ -110,17 +110,17 @@ extension DiscriminatedUnionMacro: MemberMacro {
                 """
         }.joined(separator: "\n")
 
-        let switchWrittenOut: DeclSyntax =
+        let switchWrittenOut: String =
         """
         switch self {
-        \(raw: casesWrittenOut)
+        \(casesWrittenOut)
         }
         """
 
         return
             """
             public var discriminant: Discriminant {
-                \(switchWrittenOut)
+                \(raw: switchWrittenOut)
             }
             """
 

@@ -41,7 +41,7 @@ enum Pet {
         case snake
 
         public var hasAssociatedType: Bool {
-            switch self {
+            return switch self {
             case .dog:
                 false // nil
             case .cat:
