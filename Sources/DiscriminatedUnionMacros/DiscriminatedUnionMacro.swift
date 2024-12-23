@@ -38,6 +38,7 @@ extension DiscriminatedUnionMacro: MemberMacro {
     public static func expansion<Declaration, Context>(
         of node: SwiftSyntax.AttributeSyntax,
         providingMembersOf declaration: Declaration,
+        conformingTo protocols: [TypeSyntax],
         in context: Context
     ) throws -> [SwiftSyntax.DeclSyntax]
     where
@@ -53,19 +54,34 @@ extension DiscriminatedUnionMacro: MemberMacro {
 
         let unvalidatedPropertyDecl = try instance.declareDiscriminantProperty()
         let validatedPropertyDecl = try DeclSyntax(validating: unvalidatedPropertyDecl)
+        let validatedExtractors = try instance.doSomethingSpecial().map {
+            try DeclSyntax(validating: $0)
+        }
+
+        let validatedExtractorError = try DeclSyntax(validating: extractorErrorDecl())
 
         return try [
             DeclSyntax(validating: "\(raw: discriminantDecl)"),
-            validatedPropertyDecl
-        ]
+            validatedPropertyDecl,
+            validatedExtractorError
+        ] + validatedExtractors
     }
 
     enum Error: Swift.Error {
         case attemptPrint(String)
     }
 
+    static func extractorErrorDecl() -> DeclSyntax {
+        """
+        public enum ExtractorError: Swift.Error {
+            case invalidExtraction(expected: Discriminant, actual: Discriminant)
+        }
+        """
+    }
+
     func declareDiscriminantType() throws -> EnumDeclSyntax {
-        try EnumDeclSyntax("public enum Discriminant: DiscriminantType") {
+        return try EnumDeclSyntax("public enum Discriminant: DiscriminantType") {
+
             for singleCase in childCases {
                 EnumCaseDeclSyntax(
                     leadingTrivia: .newline) {
@@ -76,24 +92,23 @@ extension DiscriminatedUnionMacro: MemberMacro {
             }
 
             "\n"
-            "\n"
 
-            try declareAssociatedTypeFunction()
+            try declareHasAssociatedTypeFunction()
         }
     }
 
-    func declareAssociatedTypeFunction() throws -> DeclSyntax {
+    func declareHasAssociatedTypeFunction() throws -> DeclSyntax {
         let theCases = childCases.map { singleCase in
             let myTrivia = singleCase.parameterClause?.parameters.description
             return "case .\(singleCase.name): \(singleCase.parameterClause != nil) // \(String(describing: myTrivia))"
         }
         let theSwitch = """
-        switch self {
+        return switch self {
         \(theCases.joined(separator: "\n"))
         }
         """
         return DeclSyntax(stringLiteral:"""
-
+            
             
             public var hasAssociatedType: Bool {
                 \(theSwitch)
@@ -101,6 +116,54 @@ extension DiscriminatedUnionMacro: MemberMacro {
             """
         )
     }
+
+    func doSomethingSpecial() throws -> [DeclSyntax] {
+        let theCases = childCases.compactMap { singleCase in
+            if let parameterClause = singleCase.parameterClause {
+                let bindings = parameterClause.parameters.enumerated().map({ (index, parameter) in
+                    "let \(parameter.firstName ?? "index\(raw: index)")"
+                })
+
+                let rawOut = parameterClause.parameters.enumerated().map({ (index, parameter) in
+                    "\(parameter.firstName ?? "index\(raw: index)")"
+                })
+
+                let output: String
+                if parameterClause.parameters.count == 1 {
+                    output = rawOut.first!
+                } else {
+                    output = "(\(rawOut.joined(separator: ", ")))"
+                }
+
+                return (
+                    String(describing: singleCase.name),
+                    parameterClause.parameters.count == 1 ? String(describing: parameterClause.parameters.first!.type) : "(\(parameterClause.parameters.description))",
+                    bindings.joined(separator: ", "),
+                    output
+                )
+            } else {
+                return nil
+            }
+        }
+
+        let theSomethings: [DeclSyntax] = theCases.map { caseName, tupleType, pBindings, returnValue in
+            let titleCasedName = "\(caseName.first!.uppercased())\(caseName.dropFirst())"
+            return """
+
+            public func tupleFrom\(raw: titleCasedName)() throws -> \(raw: tupleType) {
+                if case .\(raw: caseName)(\(raw: pBindings)) = self {
+                    return \(raw: returnValue)
+                } else {
+                    throw ExtractorError.invalidExtraction(expected: .\(raw: caseName), actual: self.discriminant)
+                }
+            }
+
+            """
+        }
+
+        return theSomethings
+    }
+
 
     func declareDiscriminantProperty() throws -> DeclSyntax {
         let casesWrittenOut = childCases.map {
@@ -110,17 +173,17 @@ extension DiscriminatedUnionMacro: MemberMacro {
                 """
         }.joined(separator: "\n")
 
-        let switchWrittenOut: DeclSyntax =
+        let switchWrittenOut: String =
         """
         switch self {
-        \(raw: casesWrittenOut)
+        \(casesWrittenOut)
         }
         """
 
         return
             """
             public var discriminant: Discriminant {
-                \(switchWrittenOut)
+                \(raw: switchWrittenOut)
             }
             """
 

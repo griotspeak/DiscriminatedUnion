@@ -23,6 +23,7 @@ final class DiscriminatedUnionTests: XCTestCase {
                 case cat(curious: Bool)
                 case parrot
                 case snake
+                case bird(name: String, Int)
             }
             """,
 
@@ -33,15 +34,17 @@ enum Pet {
     case cat(curious: Bool)
     case parrot
     case snake
+    case bird(name: String, Int)
 
     public enum Discriminant: DiscriminantType {
         case dog
         case cat
         case parrot
         case snake
+        case bird
 
         public var hasAssociatedType: Bool {
-            switch self {
+            return switch self {
             case .dog:
                 false // nil
             case .cat:
@@ -50,6 +53,8 @@ enum Pet {
                 false // nil
             case .snake:
                 false // nil
+            case .bird:
+                true // Optional("name: String, Int")
             }
         }
     }
@@ -64,6 +69,28 @@ enum Pet {
             return .parrot
         case .snake:
             return .snake
+        case .bird:
+            return .bird
+        }
+    }
+
+    public enum ExtractorError: Swift.Error {
+        case invalidExtraction(expected: Discriminant, actual: Discriminant)
+    }
+
+    public func catTupleValue() throws -> Bool {
+        if case .cat(let curious) = self {
+            return curious
+        } else {
+            throw ExtractorError.invalidExtraction(expected: .cat, actual: self.discriminant)
+        }
+    }
+
+    public func birdTupleValue() throws -> (name: String, Int) {
+        if case .bird(let name, let index1) = self {
+            return (name, index1)
+        } else {
+            throw ExtractorError.invalidExtraction(expected: .bird, actual: self.discriminant)
         }
     }
 }
