@@ -58,12 +58,12 @@ extension DiscriminatedUnionMacro: MemberMacro {
             try DeclSyntax(validating: $0)
         }
 
-        let validatedExtractorError = try DeclSyntax(validating: extractorErrorDecl())
+        let validatedPayloadExtractionError = try DeclSyntax(validating: extractorErrorDecl())
 
         return try [
             DeclSyntax(validating: "\(raw: discriminantDecl)"),
             validatedPropertyDecl,
-            validatedExtractorError
+            validatedPayloadExtractionError
         ] + validatedExtractors
     }
 
@@ -73,7 +73,7 @@ extension DiscriminatedUnionMacro: MemberMacro {
 
     static func extractorErrorDecl() -> DeclSyntax {
         """
-        public enum ExtractorError: Swift.Error {
+        public enum PayloadExtractionError: Swift.Error {
             case invalidExtraction(expected: Discriminant, actual: Discriminant)
         }
         """
@@ -150,7 +150,7 @@ extension DiscriminatedUnionMacro: MemberMacro {
             let titleCasedName = "\(caseName.first!.uppercased())\(caseName.dropFirst())"
             return """
 
-            public func tupleFrom\(raw: titleCasedName)() -> Swift.Result<\(raw: tupleType), ExtractorError> {
+            public func tupleFrom\(raw: titleCasedName)() -> Swift.Result<\(raw: tupleType), PayloadExtractionError> {
                 if case .\(raw: caseName)(\(raw: pBindings)) = self {
                     .success(\(raw: returnValue))
                 } else {

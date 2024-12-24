@@ -9,7 +9,7 @@
 //    prefixed(tupleFrom),
 //    named(Discriminant),
 //    named(discriminant),
-//    named(ExtractorError)
+//    named(PayloadExtractionError)
 )
 public macro discriminatedUnion() = #externalMacro(
     module: "DiscriminatedUnionMacros",

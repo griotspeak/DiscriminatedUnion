@@ -74,11 +74,11 @@ enum Pet {
         }
     }
 
-    public enum ExtractorError: Swift.Error {
+    public enum PayloadExtractionError: Swift.Error {
         case invalidExtraction(expected: Discriminant, actual: Discriminant)
     }
 
-    public func tupleFromCat() -> Swift.Result<Bool, ExtractorError> {
+    public func tupleFromCat() -> Swift.Result<Bool, PayloadExtractionError> {
         if case .cat(let curious) = self {
             .success(curious)
         } else {
@@ -86,7 +86,7 @@ enum Pet {
         }
     }
 
-    public func tupleFromBird() -> Swift.Result<(name: String, Int), ExtractorError> {
+    public func tupleFromBird() -> Swift.Result<(name: String, Int), PayloadExtractionError> {
         if case .bird(let name, let index1) = self {
             .success((name, index1))
         } else {
