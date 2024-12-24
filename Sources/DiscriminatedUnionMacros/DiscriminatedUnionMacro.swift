@@ -150,11 +150,11 @@ extension DiscriminatedUnionMacro: MemberMacro {
             let titleCasedName = "\(caseName.first!.uppercased())\(caseName.dropFirst())"
             return """
 
-            public func tupleFrom\(raw: titleCasedName)() throws -> \(raw: tupleType) {
+            public func tupleFrom\(raw: titleCasedName)() -> Swift.Result<\(raw: tupleType), ExtractorError> {
                 if case .\(raw: caseName)(\(raw: pBindings)) = self {
-                    return \(raw: returnValue)
+                    .success(\(raw: returnValue))
                 } else {
-                    throw ExtractorError.invalidExtraction(expected: .\(raw: caseName), actual: self.discriminant)
+                    .failure(.invalidExtraction(expected: .\(raw: caseName), actual: self.discriminant))
                 }
             }
 

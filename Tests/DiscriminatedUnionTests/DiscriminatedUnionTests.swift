@@ -78,19 +78,19 @@ enum Pet {
         case invalidExtraction(expected: Discriminant, actual: Discriminant)
     }
 
-    public func catTupleValue() throws -> Bool {
+    public func tupleFromCat() -> Swift.Result<Bool, ExtractorError> {
         if case .cat(let curious) = self {
-            return curious
+            .success(curious)
         } else {
-            throw ExtractorError.invalidExtraction(expected: .cat, actual: self.discriminant)
+            .failure(.invalidExtraction(expected: .cat, actual: self.discriminant))
         }
     }
 
-    public func birdTupleValue() throws -> (name: String, Int) {
+    public func tupleFromBird() -> Swift.Result<(name: String, Int), ExtractorError> {
         if case .bird(let name, let index1) = self {
-            return (name, index1)
+            .success((name, index1))
         } else {
-            throw ExtractorError.invalidExtraction(expected: .bird, actual: self.discriminant)
+            .failure(.invalidExtraction(expected: .bird, actual: self.discriminant))
         }
     }
 }
