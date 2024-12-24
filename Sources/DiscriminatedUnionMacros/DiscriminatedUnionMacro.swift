@@ -74,7 +74,7 @@ extension DiscriminatedUnionMacro: MemberMacro {
     static func extractorErrorDecl() -> DeclSyntax {
         """
         public enum ExtractorError: Swift.Error {
-            case invalidExtraction
+            case invalidExtraction(expected: Discriminant, actual: Discriminant)
         }
         """
     }
@@ -147,21 +147,20 @@ extension DiscriminatedUnionMacro: MemberMacro {
         }
 
         let theSomethings: [DeclSyntax] = theCases.map { caseName, tupleType, pBindings, returnValue in
-//            let titleCasedName = "\(caseName.first!.uppercased())\(caseName.dropFirst())"
+            let titleCasedName = "\(caseName.first!.uppercased())\(caseName.dropFirst())"
             return """
 
-            public func \(raw: caseName)AssociatedValue() throws -> \(raw: tupleType) {
+            public func tupleFrom\(raw: titleCasedName)() throws -> \(raw: tupleType) {
                 if case .\(raw: caseName)(\(raw: pBindings)) = self {
                     return \(raw: returnValue)
                 } else {
-                    throw ExtractorError.invalidExtraction
+                    throw ExtractorError.invalidExtraction(expected: .\(raw: caseName), actual: self.discriminant)
                 }
             }
 
             """
         }
 
-        Swift.print("usiyan::: theSomethings: \(String(describing: theSomethings))")
         return theSomethings
     }
 

@@ -5,7 +5,11 @@
 )
 @attached(
     member,
-    names: arbitrary, named(Discriminant), named(discriminant), named(ExtractorError)
+    names: arbitrary
+//    prefixed(tupleFrom),
+//    named(Discriminant),
+//    named(discriminant),
+//    named(ExtractorError)
 )
 public macro discriminatedUnion() = #externalMacro(
     module: "DiscriminatedUnionMacros",
