@@ -1,9 +1,12 @@
 
 @attached(
-    member,
-    names: named(Discriminant), named(discriminant), prefixed(associatedValueFor)
+    extension,
+    conformances: DiscriminatedUnion
 )
-@attached(extension, conformances: DiscriminatedUnion)
+@attached(
+    member,
+    names: arbitrary, named(Discriminant), named(discriminant), named(ExtractorError)
+)
 public macro discriminatedUnion() = #externalMacro(
     module: "DiscriminatedUnionMacros",
     type: "DiscriminatedUnionMacro")

@@ -54,15 +54,29 @@ extension DiscriminatedUnionMacro: MemberMacro {
 
         let unvalidatedPropertyDecl = try instance.declareDiscriminantProperty()
         let validatedPropertyDecl = try DeclSyntax(validating: unvalidatedPropertyDecl)
+        let validatedExtractors = try instance.doSomethingSpecial().map {
+            try DeclSyntax(validating: $0)
+        }
+
+        let validatedExtractorError = try DeclSyntax(validating: extractorErrorDecl())
 
         return try [
             DeclSyntax(validating: "\(raw: discriminantDecl)"),
-            validatedPropertyDecl
-        ]
+            validatedPropertyDecl,
+            validatedExtractorError
+        ] + validatedExtractors
     }
 
     enum Error: Swift.Error {
         case attemptPrint(String)
+    }
+
+    static func extractorErrorDecl() -> DeclSyntax {
+        """
+        public enum ExtractorError: Swift.Error {
+            case invalidExtraction
+        }
+        """
     }
 
     func declareDiscriminantType() throws -> EnumDeclSyntax {
@@ -133,16 +147,16 @@ extension DiscriminatedUnionMacro: MemberMacro {
         }
 
         let theSomethings: [DeclSyntax] = theCases.map { caseName, tupleType, pBindings, returnValue in
-            let titleCasedName = "\(caseName.first!.uppercased())\(caseName.dropFirst())"
+//            let titleCasedName = "\(caseName.first!.uppercased())\(caseName.dropFirst())"
             return """
 
-                public var associatedValueFor\(raw: titleCasedName): \(raw: tupleType) {
-                    if case .\(raw: caseName)(raw: \(raw: pBindings)) = self {
-                        return \(raw: returnValue)
-                    } else {
-                        return nil
-                    }
+            public func \(raw: caseName)AssociatedValue() throws -> \(raw: tupleType) {
+                if case .\(raw: caseName)(\(raw: pBindings)) = self {
+                    return \(raw: returnValue)
+                } else {
+                    throw ExtractorError.invalidExtraction
                 }
+            }
 
             """
         }
