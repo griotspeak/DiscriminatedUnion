@@ -24,6 +24,7 @@ final class DiscriminatedUnionTests: XCTestCase {
                 case parrot
                 case snake
                 case bird(name: String, Int)
+                case hydra(@autoclosure () -> String, String)
             }
             """,
 
@@ -35,6 +36,7 @@ enum Pet {
     case parrot
     case snake
     case bird(name: String, Int)
+    case hydra(@autoclosure () -> String, String)
 
     public enum Discriminant: DiscriminantType {
         case dog
@@ -42,6 +44,7 @@ enum Pet {
         case parrot
         case snake
         case bird
+        case hydra
 
         public var hasAssociatedType: Bool {
             return switch self {
@@ -55,6 +58,8 @@ enum Pet {
                 false // nil
             case .bird:
                 true // Optional("name: String, Int")
+            case .hydra:
+                true // Optional("@autoclosure () -> String, String")
             }
         }
     }
@@ -71,6 +76,8 @@ enum Pet {
             return .snake
         case .bird:
             return .bird
+        case .hydra:
+            return .hydra
         }
     }
 
@@ -91,6 +98,14 @@ enum Pet {
             .success((name, index1))
         } else {
             .failure(.invalidExtraction(expected: .bird, actual: self.discriminant))
+        }
+    }
+
+    public func tupleFromHydra() -> Swift.Result<(() -> String, String), PayloadExtractionError> {
+        if case .hydra(let index0, let index1) = self {
+            .success((index0, index1))
+        } else {
+            .failure(.invalidExtraction(expected: .hydra, actual: self.discriminant))
         }
     }
 }

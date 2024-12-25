@@ -135,9 +135,17 @@ extension DiscriminatedUnionMacro: MemberMacro {
                     output = "(\(rawOut.joined(separator: ", ")))"
                 }
 
+                let strippedParams = if parameterClause.parameters.count == 1 {
+                    String(describing: parameterClause.parameters.first!.type)
+                } else {
+                    "(\(parameterClause.parameters.description))"
+                }
+
+
+                Swift.print("usiyan::: strippedParams: \(String(describing: strippedParams))")
                 return (
                     String(describing: singleCase.name),
-                    parameterClause.parameters.count == 1 ? String(describing: parameterClause.parameters.first!.type) : "(\(parameterClause.parameters.description))",
+                    strippedParams.replacingOccurrences(of: "@autoclosure ", with: ""),
                     bindings.joined(separator: ", "),
                     output
                 )
