@@ -142,7 +142,6 @@ extension DiscriminatedUnionMacro: MemberMacro {
                 }
 
 
-                Swift.print("usiyan::: strippedParams: \(String(describing: strippedParams))")
                 return (
                     String(describing: singleCase.name),
                     strippedParams.replacingOccurrences(of: "@autoclosure ", with: ""),
@@ -158,11 +157,11 @@ extension DiscriminatedUnionMacro: MemberMacro {
             let titleCasedName = "\(caseName.first!.uppercased())\(caseName.dropFirst())"
             return """
 
-            public func tupleFrom\(raw: titleCasedName)() -> Swift.Result<\(raw: tupleType), PayloadExtractionError> {
-                if case .\(raw: caseName)(\(raw: pBindings)) = self {
+            public static func tupleFrom\(raw: titleCasedName)(_ instance: Self) -> Swift.Result<\(raw: tupleType), PayloadExtractionError> {
+                if case .\(raw: caseName)(\(raw: pBindings)) = instance {
                     .success(\(raw: returnValue))
                 } else {
-                    .failure(.invalidExtraction(expected: .\(raw: caseName), actual: self.discriminant))
+                    .failure(.invalidExtraction(expected: .\(raw: caseName), actual: instance.discriminant))
                 }
             }
 
