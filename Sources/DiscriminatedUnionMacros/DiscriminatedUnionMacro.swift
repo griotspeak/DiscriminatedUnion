@@ -231,7 +231,7 @@ private struct TupleExtractionPropertyGenerator {
             
             public static func tupleFrom\(raw: titleCasedName)(_ instance: Self) -> Swift.Result<\(raw: tupleType), PayloadExtractionError> {
                 if case .\(raw: caseName)(\(raw: pBindings)) = instance {
-                    .success(\(raw: returnValue(parameterClause: parameterClause))
+                    .success(\(raw: returnValue(parameterClause: parameterClause)))
                 } else {
                     .failure(.invalidExtraction(expected: .\(raw: caseName), actual: instance.discriminant))
                 }
