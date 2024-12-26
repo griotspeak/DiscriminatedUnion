@@ -54,7 +54,7 @@ extension DiscriminatedUnionMacro: MemberMacro {
 
         let unvalidatedPropertyDecl = try instance.declareDiscriminantProperty()
         let validatedPropertyDecl = try DeclSyntax(validating: unvalidatedPropertyDecl)
-        let validatedExtractors = try instance.doSomethingSpecial().map {
+        let validatedExtractors = try instance.createTupleExtractors().map {
             try DeclSyntax(validating: $0)
         }
 
@@ -117,7 +117,7 @@ extension DiscriminatedUnionMacro: MemberMacro {
         )
     }
 
-    func doSomethingSpecial() throws -> [DeclSyntax] {
+    func createTupleExtractors() throws -> [DeclSyntax] {
         let theCases = childCases.compactMap { singleCase in
             if let parameterClause = singleCase.parameterClause {
                 let bindings = parameterClause.parameters.enumerated().map({ (index, parameter) in
