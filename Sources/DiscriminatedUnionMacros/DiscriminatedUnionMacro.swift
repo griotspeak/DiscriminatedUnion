@@ -118,57 +118,11 @@ extension DiscriminatedUnionMacro: MemberMacro {
     }
 
     func createTupleExtractors() throws -> [DeclSyntax] {
-        let theCases = childCases.compactMap { singleCase in
-            if let parameterClause = singleCase.parameterClause {
-                let bindings = parameterClause.parameters.enumerated().map({ (index, parameter) in
-                    "let \(parameter.firstName ?? "index\(raw: index)")"
-                })
-
-                let rawOut = parameterClause.parameters.enumerated().map({ (index, parameter) in
-                    "\(parameter.firstName ?? "index\(raw: index)")"
-                })
-
-                let output: String
-                if parameterClause.parameters.count == 1 {
-                    output = rawOut.first!
-                } else {
-                    output = "(\(rawOut.joined(separator: ", ")))"
-                }
-
-                let strippedParams = if parameterClause.parameters.count == 1 {
-                    String(describing: parameterClause.parameters.first!.type)
-                } else {
-                    "(\(parameterClause.parameters.description))"
-                }
-
-
-                return (
-                    String(describing: singleCase.name),
-                    strippedParams.replacingOccurrences(of: "@autoclosure ", with: ""),
-                    bindings.joined(separator: ", "),
-                    output
-                )
-            } else {
-                return nil
-            }
+        let theCases: [DeclSyntax] = childCases.compactMap { singleCase in
+            TupleExtractionPropertyGenerator(singleCase: singleCase).generate()
         }
 
-        let theSomethings: [DeclSyntax] = theCases.map { caseName, tupleType, pBindings, returnValue in
-            let titleCasedName = "\(caseName.first!.uppercased())\(caseName.dropFirst())"
-            return """
-
-            public static func tupleFrom\(raw: titleCasedName)(_ instance: Self) -> Swift.Result<\(raw: tupleType), PayloadExtractionError> {
-                if case .\(raw: caseName)(\(raw: pBindings)) = instance {
-                    .success(\(raw: returnValue))
-                } else {
-                    .failure(.invalidExtraction(expected: .\(raw: caseName), actual: instance.discriminant))
-                }
-            }
-
-            """
-        }
-
-        return theSomethings
+        return theCases
     }
 
 
@@ -228,3 +182,61 @@ struct DiscriminatedUnionPlugin: CompilerPlugin {
     ]
 }
 
+private struct TupleExtractionPropertyGenerator {
+    let singleCase: EnumCaseElementSyntax
+
+    func returnValue(parameterClause: EnumCaseParameterClauseSyntax) -> String {
+
+        let rawOut = parameterClause.parameters.enumerated().map({ (index, parameter) in
+            "\(parameter.firstName ?? "index\(raw: index)")"
+        })
+
+        if parameterClause.parameters.count == 1 {
+            return rawOut.first!
+        } else {
+            return "(\(rawOut.joined(separator: ", ")))"
+        }
+    }
+
+    func strippedParameters(parameterClause: EnumCaseParameterClauseSyntax) -> String {
+
+        if parameterClause.parameters.count == 1 {
+            return String(describing: parameterClause.parameters.first!.type)
+        } else {
+            return "(\(parameterClause.parameters.description))"
+        }
+
+    }
+
+    func parameterBindings(parameterClause: EnumCaseParameterClauseSyntax) -> String {
+        parameterClause
+            .parameters
+            .enumerated()
+            .map{ (index, parameter) in
+                "let \(parameter.firstName ?? "index\(raw: index)")"
+            }.joined(separator: ", ")
+    }
+
+    func generate() -> DeclSyntax? {
+        guard let parameterClause = singleCase.parameterClause else {
+            return nil
+        }
+
+        let caseName = String(describing: singleCase.name)
+        let tupleType = strippedParameters(parameterClause: parameterClause).replacingOccurrences(of: "@autoclosure ", with: "")
+        let pBindings = parameterBindings(parameterClause: parameterClause)
+        let titleCasedName = "\(caseName.first!.uppercased())\(caseName.dropFirst())"
+
+        return """
+            
+            public static func tupleFrom\(raw: titleCasedName)(_ instance: Self) -> Swift.Result<\(raw: tupleType), PayloadExtractionError> {
+                if case .\(raw: caseName)(\(raw: pBindings)) = instance {
+                    .success(\(raw: returnValue(parameterClause: parameterClause))
+                } else {
+                    .failure(.invalidExtraction(expected: .\(raw: caseName), actual: instance.discriminant))
+                }
+            }
+            
+            """
+    }
+}
