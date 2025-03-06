@@ -20,8 +20,8 @@ let package = Package(
     ],
     dependencies: [
         .package(
-            url: "https://github.com/apple/swift-syntax.git",
-            from: "601.0.0-prerelease-2024-10-09"
+            url: "https://github.com/swiftlang/swift-syntax.git",
+            from: "600.0.0-latest"
         ),
     ],
     targets: [
