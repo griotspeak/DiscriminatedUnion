@@ -20,7 +20,7 @@ public protocol DiscriminatedUnion {
     var discriminant: Discriminant { get }
 }
 
-public protocol DiscriminantType: Hashable, Equatable, CaseIterable, Sendable {}
+public protocol DiscriminantType: Hashable, Equatable, CaseIterable, Sendable, Codable, CodingKey {}
 
 extension DiscriminatedUnion {
     public static func randomDiscriminant<G: RandomNumberGenerator>(
