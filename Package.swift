@@ -1,12 +1,17 @@
-// swift-tools-version: 6.0
-// The swift-tools-version declares the minimum version of Swift required to build this package.
+// swift-tools-version: 6.2
 
 import PackageDescription
 import CompilerPluginSupport
 
 let package = Package(
     name: "DiscriminatedUnion",
-    platforms: [.macOS(.v10_15), .iOS(.v13), .tvOS(.v13), .watchOS(.v6), .macCatalyst(.v13)],
+    platforms: [
+        .macOS(.v15), // latest is safe for now (not shipping macOS app)
+        .iOS(.v15),
+        .tvOS(.v16), // latest is safe for now (not shipping tvOS app)
+        .watchOS(.v26),
+        .macCatalyst(.v26)
+    ],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
