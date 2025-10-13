@@ -85,27 +85,27 @@ enum Pet {
         case invalidExtraction(expected: Discriminant, actual: Discriminant)
     }
 
-    public static func tupleFromCat(_ instance: Self) -> Swift.Result<Bool, PayloadExtractionError> {
+    public static func tupleFromCat(_ instance: Self) throws(PayloadExtractionError) -> Bool {
         if case .cat(let curious) = instance {
-            .success(curious)
+            return curious
         } else {
-            .failure(.invalidExtraction(expected: .cat, actual: instance.discriminant))
+            throw .invalidExtraction(expected: .cat, actual: instance.discriminant)
         }
     }
 
-    public static func tupleFromBird(_ instance: Self) -> Swift.Result<(name: String, Int), PayloadExtractionError> {
+    public static func tupleFromBird(_ instance: Self) throws(PayloadExtractionError) -> (name: String, Int) {
         if case .bird(let name, let index1) = instance {
-            .success((name, index1))
+            return (name, index1)
         } else {
-            .failure(.invalidExtraction(expected: .bird, actual: instance.discriminant))
+            throw .invalidExtraction(expected: .bird, actual: instance.discriminant)
         }
     }
 
-    public static func tupleFromHydra(_ instance: Self) -> Swift.Result<(() -> String, String), PayloadExtractionError> {
+    public static func tupleFromHydra(_ instance: Self) throws(PayloadExtractionError) -> (() -> String, String) {
         if case .hydra(let index0, let index1) = instance {
-            .success((index0, index1))
+            return (index0, index1)
         } else {
-            .failure(.invalidExtraction(expected: .hydra, actual: instance.discriminant))
+            throw .invalidExtraction(expected: .hydra, actual: instance.discriminant)
         }
     }
 }
