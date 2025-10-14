@@ -81,6 +81,8 @@ enum Pet {
         }
     }
 
+    // MARK: Payload Extraction
+
     public enum PayloadExtractionError: Swift.Error {
         case invalidExtraction(expected: Discriminant, actual: Discriminant)
     }
@@ -107,6 +109,32 @@ enum Pet {
         } else {
             throw .invalidExtraction(expected: .hydra, actual: instance.discriminant)
         }
+    }
+
+    // MARK: IsCase Properties
+
+    public var isDog: Bool {
+        discriminant == .dog
+    }
+
+    public var isCat: Bool {
+        discriminant == .cat
+    }
+
+    public var isParrot: Bool {
+        discriminant == .parrot
+    }
+
+    public var isSnake: Bool {
+        discriminant == .snake
+    }
+
+    public var isBird: Bool {
+        discriminant == .bird
+    }
+
+    public var isHydra: Bool {
+        discriminant == .hydra
     }
 }
 

@@ -54,9 +54,9 @@ extension DiscriminatedUnionMacro: MemberMacro {
 
         let unvalidatedPropertyDecl = try instance.declareDiscriminantProperty()
         let validatedPropertyDecl = try DeclSyntax(validating: unvalidatedPropertyDecl)
-        let validatedExtractors = try instance.createTupleExtractors().map {
-            try DeclSyntax(validating: $0)
-        }
+
+        let validatedExtractors = try instance.createTupleExtractors()
+        let validatedIsCaseProperties = try instance.createIsCaseProperties()
 
         let validatedPayloadExtractionError = try DeclSyntax(validating: extractorErrorDecl())
 
@@ -64,7 +64,7 @@ extension DiscriminatedUnionMacro: MemberMacro {
             DeclSyntax(validating: "\(raw: discriminantDecl)"),
             validatedPropertyDecl,
             validatedPayloadExtractionError
-        ] + validatedExtractors
+        ] + validatedExtractors + validatedIsCaseProperties
     }
 
     enum Error: Swift.Error {
@@ -73,6 +73,9 @@ extension DiscriminatedUnionMacro: MemberMacro {
 
     static func extractorErrorDecl() -> DeclSyntax {
         """
+        
+        // MARK: Payload Extraction
+
         public enum PayloadExtractionError: Swift.Error {
             case invalidExtraction(expected: Discriminant, actual: Discriminant)
         }
@@ -122,7 +125,28 @@ extension DiscriminatedUnionMacro: MemberMacro {
             TupleExtractionPropertyGenerator(singleCase: singleCase).generate()
         }
 
-        return theCases
+        return try theCases.map(DeclSyntax.init(validating:))
+    }
+
+    func createIsCaseProperties() throws -> [DeclSyntax] {
+        let comment: Trivia = """
+
+// MARK: IsCase Properties
+
+
+"""
+
+        let theCases: [DeclSyntax] = try childCases.compactMap { singleCase in
+            try DeclSyntax(validating: IsCasePropertyGenerator(singleCase: singleCase).generate())
+        }
+        return theCases.enumerated().map { index, singleCase in
+            if index == 0 {
+                singleCase.with(\.leadingTrivia, comment)
+            } else {
+                singleCase
+            }
+        }
+
     }
 
 
@@ -235,6 +259,32 @@ private struct TupleExtractionPropertyGenerator {
                 } else {
                     throw .invalidExtraction(expected: .\(raw: caseName), actual: instance.discriminant)
                 }
+            }
+            
+            """
+    }
+}
+
+private struct IsCasePropertyGenerator {
+    let singleCase: EnumCaseElementSyntax
+
+    func parameterBindings(parameterClause: EnumCaseParameterClauseSyntax) -> String {
+        parameterClause
+            .parameters
+            .enumerated()
+            .map{ (index, parameter) in
+                "let \(parameter.firstName ?? "index\(raw: index)")"
+            }.joined(separator: ", ")
+    }
+
+    func generate() -> DeclSyntax {
+        let caseName = String(describing: singleCase.name)
+        let titleCasedName = "\(caseName.first!.uppercased())\(caseName.dropFirst())"
+
+        return """
+            
+            public var is\(raw: titleCasedName): Bool {
+                discriminant == .\(raw: caseName)
             }
             
             """
