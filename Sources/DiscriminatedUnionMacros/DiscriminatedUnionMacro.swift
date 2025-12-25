@@ -55,6 +55,9 @@ extension DiscriminatedUnionMacro: MemberMacro {
         let unvalidatedPropertyDecl = try instance.declareDiscriminantProperty()
         let validatedPropertyDecl = try DeclSyntax(validating: unvalidatedPropertyDecl)
 
+        let unvalidatedHasDiscriminantDecl = try instance.declareHasDiscriminantInFunction()
+        let validatedHasDiscriminantDecl = try DeclSyntax(validating: unvalidatedHasDiscriminantDecl)
+
         let validatedExtractors = try instance.createTupleExtractors()
         let validatedIsCaseProperties = try instance.createIsCaseProperties()
 
@@ -63,6 +66,7 @@ extension DiscriminatedUnionMacro: MemberMacro {
         return try [
             DeclSyntax(validating: "\(raw: discriminantDecl)"),
             validatedPropertyDecl,
+            validatedHasDiscriminantDecl,
             validatedPayloadExtractionError
         ] + validatedExtractors + validatedIsCaseProperties
     }
@@ -172,6 +176,15 @@ extension DiscriminatedUnionMacro: MemberMacro {
             }
             """
 
+    }
+
+    func declareHasDiscriminantInFunction() throws -> DeclSyntax {
+        return
+            """
+            public func hasDiscriminant(in acceptableOptions: Set<Discriminant>) -> Bool {
+                acceptableOptions.contains(discriminant)
+            }
+            """
     }
 
 }

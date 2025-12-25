@@ -81,6 +81,10 @@ enum Pet {
         }
     }
 
+    public func hasDiscriminant(in acceptableOptions: Set<Discriminant>) -> Bool {
+        acceptableOptions.contains(discriminant)
+    }
+
     // MARK: Payload Extraction
 
     public enum PayloadExtractionError: Swift.Error {
