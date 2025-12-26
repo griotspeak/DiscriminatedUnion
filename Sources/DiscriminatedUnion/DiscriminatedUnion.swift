@@ -19,7 +19,7 @@ public macro discriminatedUnion() = #externalMacro(
 
 @freestanding(expression)
 public macro hasDiscriminant<T: DiscriminatedUnion>(
-    instance: T,
+    _ instance: T,
     in acceptableValues: T.Discriminant...
 ) -> Bool = #externalMacro(
     module: "DiscriminatedUnionMacros",
