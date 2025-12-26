@@ -161,7 +161,8 @@ enum Pet {
                 case hydra(@autoclosure () -> String, String)
             }
             
-            #hasDiscriminant(in: Pet.dog, .snake
+            let variable = Pet.parrot
+            #hasDiscriminant(variable, in: .dog, .snake
             )
             """,
 
@@ -275,9 +276,10 @@ enum Pet {
     }
 }
 
+let variable = Pet.parrot
 {
-    switch self {
-    case Pet.dog:
+    switch variable.discriminant {
+    case .dog:
         return true
     case .snake:
         return true

@@ -18,7 +18,10 @@ public macro discriminatedUnion() = #externalMacro(
     type: "DiscriminatedUnionMacro")
 
 @freestanding(expression)
-public macro hasDiscriminant<T: DiscriminatedUnion>(in value: T.Discriminant...) -> Bool = #externalMacro(
+public macro hasDiscriminant<T: DiscriminatedUnion>(
+    instance: T,
+    in acceptableValues: T.Discriminant...
+) -> Bool = #externalMacro(
     module: "DiscriminatedUnionMacros",
     type: "HasDiscriminantMacro"
 )

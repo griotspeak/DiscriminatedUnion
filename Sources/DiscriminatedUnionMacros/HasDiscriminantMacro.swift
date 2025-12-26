@@ -17,7 +17,8 @@ public struct HasDiscriminantMacro: ExpressionMacro {
     ) -> ExprSyntax {
         let arguments = node.arguments.map(\.expression)
 
-        let requestedCases = arguments.map {
+        // TODO: properly handle this with diagnostics
+        let requestedCases = arguments.dropFirst().map {
             """
             case \($0):
                 return true
@@ -26,7 +27,7 @@ public struct HasDiscriminantMacro: ExpressionMacro {
 
         let switchWrittenOut: String =
         """
-        switch self {
+        switch \(node.arguments.first!.expression).discriminant {
         \(requestedCases)
         default:
             return false
