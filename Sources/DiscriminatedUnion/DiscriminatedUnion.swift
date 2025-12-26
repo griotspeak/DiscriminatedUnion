@@ -9,12 +9,21 @@
 //    prefixed(tupleFrom),
 //    named(Discriminant),
 //    named(discriminant),
+
+//    named(hasAssociatedType),
 //    named(PayloadExtractionError)
 )
 public macro discriminatedUnion() = #externalMacro(
     module: "DiscriminatedUnionMacros",
     type: "DiscriminatedUnionMacro")
 
+@freestanding(expression)
+public macro hasDiscriminant<T: DiscriminatedUnion>(in value: T.Discriminant...) -> Bool = #externalMacro(
+    module: "DiscriminatedUnionMacros",
+    type: "HasDiscriminantMacro"
+)
+
+// MARK: -
 public protocol DiscriminatedUnion {
     associatedtype Discriminant: DiscriminantType
     var discriminant: Discriminant { get }
