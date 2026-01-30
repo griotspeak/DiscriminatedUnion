@@ -8,7 +8,7 @@ enum Pet {
     case parrot(loud: Bool)
     case snake
     case turtle(snapper: Bool)
-//    case bird(name: String, Int)
+    case bird(name: String, Int)
 
 }
 
